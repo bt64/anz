@@ -1,0 +1,122 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-size: 1rem;
+  font-family: "Roboto Mono Variable", sans-serif;
+}
+
+body {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  background-color: #f5f5f5;
+  height: 100vh;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  place-self: start;
+  gap: 16px;
+  padding: 16px;
+  width: 100%;
+  height: 100%;
+
+  input {
+    display: none;
+  }
+
+  label {
+    transition: background-color 100ms;
+    cursor: pointer;
+    background-color: #222;
+    padding: 8px 16px;
+    color: #fff;
+    user-select: none;
+
+    &:hover {
+      background-color: #333;
+    }
+  }
+
+  p {
+    background-color: #e2e2e2;
+    padding: 8px 16px;
+    color: #666;
+
+    &:empty {
+      display: none;
+    }
+
+    span {
+      color: #222;
+      font-weight: bold;
+    }
+  }
+}
+
+svg {
+  display: block;
+  z-index: -1;
+  padding: 64px;
+  width: 100%;
+  height: 100%;
+}
+
+.axis {
+  position: absolute;
+  pointer-events: none;
+  color: #999;
+  /* font-weight: bold; */
+  font-size: 10px;
+  user-select: none;
+
+  span {
+    color: #222;
+    font-size: inherit;
+  }
+}
+
+.axis.x {
+  bottom: 16px;
+  left: 50%;
+  translate: -50% 0;
+}
+
+.axis.y {
+  top: 50%;
+  left: 12px;
+  translate: 0 -50%;
+  scale: -1;
+  writing-mode: vertical-lr;
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.container.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scroll {
+  position: absolute;
+  transition: background-color 100ms;
+  background-color: #0002;
+
+  &:hover {
+    background-color: #0003;
+  }
+}
+
+.scroll.h {
+  top: 0;
+  right: 64px;
+  left: 64px;
+  height: 14px;
+}

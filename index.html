@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>anz</title>
+</head>
+
+<body>
+  <div class="container hide">
+    <!-- <canvas></canvas> -->
+    <svg preserveAspectRatio="none">
+
+    </svg>
+    <div class="axis x">TIME <span>s</span></div>
+    <div class="axis y">VOLTAGE <span>V</span></div>
+    <div class="scroll h"></div>
+    <div class="scroll v"></div>
+  </div>
+  <div class="controls">
+    <label for="file">LOAD FILE</label>
+    <input type="file" id="file" accept=".anz">
+    <p class="info"></p>
+  </div>
+
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
