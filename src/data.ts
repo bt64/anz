@@ -4,51 +4,67 @@ type FileData = {
   ch_number: number[];
   evoked_flag: number[];
   record_points: number[];
-  record_values: number[][];
+  record_values: number[][] | number[][][];
   sampling_rate: number[];
+};
+
+export type Point = {
+  x: number;
+  y: number;
 };
 
 const interpolationDegree = 4;
 
 export class Data {
-  /**
-   * @param data The voltage values of the signal.
-   * @param sampleRate The sampling rate of the signal in Hz.
-   */
-  constructor(
-    public data: number[],
-    public samplingRate: number,
-    public isEvoked = false,
-    public frame = 0,
-  ) {}
+  /** The voltage values of the signal. */
+  public data: number[] = [];
+  /** The sampling rate of the signal in Hz. */
+  public samplingRate: number = 0;
+  /** Whether the data is evoked or not. */
+  public isEvoked: boolean = false;
+  /** The channel number of the data. */
+  public channel: number = 0;
+  /** The number of frames in the data. Only used for evoked data. */
+  public frameCount = 0;
 
-  static async fromFile(file: File): Promise<Data> {
+  /**
+   * @param file The .anz file to read the data from.
+   * @param frame The frame number to read (0-based). Only used for evoked data.
+   */
+  constructor(public frame = 0) {}
+
+  /**
+   * @param file The .anz file to read the data from.
+   */
+  public async loadFromFile(file: File, channel?: number, frame = 0) {
     const buf = await file.arrayBuffer();
     const matData = read<FileData>(buf);
     console.log(matData);
 
-    const chNumber = matData.data.ch_number[0];
+    const chNumber = channel || matData.data.ch_number[0];
+    // const chNumber = 0;
     const isEvoked = matData.data.evoked_flag[0] === 1;
-    // const chNumber = 2;
-    const channels = matData.data.ch_number;
     const samplingRate = matData.data.sampling_rate[0];
     const recordValues = matData.data.record_values[chNumber];
-    const evokedValues: number[] = matData.data.record_values[0].flat();
+    const evokedValues: number[] = [];
 
-    const data = new Data(
-      isEvoked ? evokedValues : recordValues,
-      samplingRate,
-      isEvoked,
-    );
+    if (isEvoked) {
+      this.frameCount = (recordValues as number[][])[0].length;
 
-    document.querySelector("p.info")!.innerHTML =
-      `<span>${file.name}</span> : ${samplingRate}Hz, ${data.duration}s, [${data.min.toFixed(3)}V, ${data.max.toFixed(3)}V], CH${channels.join("/CH")}`;
+      for (let j = 0; j < recordValues.length; j++) {
+        evokedValues.push((recordValues as number[][])[j][frame]);
+      }
+    }
 
-    return data;
+    this.data = isEvoked ? evokedValues : (recordValues as number[]);
+    this.samplingRate = samplingRate;
+    this.isEvoked = isEvoked;
+    this.channel = chNumber;
   }
 
+  /** The duration of the signal in ms. */
   public get duration() {
-    return this.data.length / this.samplingRate;
+    return (this.data.length / this.samplingRate) * 1000;
   }
 
   public get min() {
@@ -84,13 +100,17 @@ export class Data {
     return interpolated;
   }
 
-  public points(interpolated = false) {
-    const points: { x: number; y: number }[] = [];
+  public points(interpolated = true) {
+    if (this.isEvoked) {
+      interpolated = false;
+    }
+
+    const points: Point[] = [];
     const data = interpolated ? this.interpolated : this.data;
 
     for (let i = 0; i < data.length; i++) {
       const x = interpolated ? i * interpolationDegree : i;
-      const y = data[i];
+      const y = -data[i];
       points.push({ x, y });
     }
 

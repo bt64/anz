@@ -4,11 +4,11 @@ import { setScale } from "./draw";
 const scrollh = document.querySelector("div.scroll.h") as HTMLDivElement;
 
 const border = {
-  left: 64,
-  right: 64,
+  left: 49.5,
+  right: 16,
 };
 
-const minWidth = 5;
+const minWidth = 24;
 
 let width = window.innerWidth - border.left - border.right;
 
@@ -21,7 +21,7 @@ let scrollDragStartRight = 0;
 let scrollLeft = border.left;
 let scrollRight = border.right;
 
-window.addEventListener("resize", () => {
+const reset = () => {
   width = window.innerWidth - border.left - border.right;
   scrollLeft = border.left;
   scrollRight = border.right;
@@ -32,7 +32,9 @@ window.addEventListener("resize", () => {
     (width + border.left + border.right - scrollLeft - scrollRight) / width,
     (scrollLeft - border.left) / width,
   );
-});
+};
+
+window.addEventListener("resize", reset);
 
 scrollh.addEventListener("pointermove", (e) => {
   if (e.offsetX < 12 || e.offsetX > scrollh.clientWidth - 12) {
@@ -50,7 +52,7 @@ window.addEventListener("pointermove", (e) => {
     scrollLeft = clamp(
       e.x,
       border.left,
-      width + border.left - scrollRight - minWidth,
+      width + border.right - scrollRight - minWidth,
     );
     scrollh.style.left = scrollLeft + "px";
   }
@@ -117,4 +119,43 @@ window.addEventListener("pointerup", () => {
   scrollResize = null;
   scrollDrag = false;
   document.body.style.cursor = "default";
+});
+
+window.addEventListener("wheel", (e) => {
+  let delta = 0;
+  if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+    delta = e.deltaX;
+  } else {
+    delta = e.deltaY;
+  }
+
+  delta *= width / (window.innerWidth * 5);
+
+  let newLeft = clamp(
+    scrollLeft + delta,
+    border.left,
+    width + border.left - scrollRight - minWidth,
+  );
+
+  let newRight = clamp(
+    scrollRight - delta,
+    border.right,
+    width + border.right - scrollLeft - minWidth,
+  );
+
+  if (
+    (delta < 0 && newLeft !== border.left) ||
+    (delta > 0 && newRight !== border.right)
+  ) {
+    scrollLeft = newLeft;
+    scrollRight = newRight;
+  }
+
+  scrollh.style.left = scrollLeft + "px";
+  scrollh.style.right = scrollRight + "px";
+
+  setScale(
+    (width + border.left + border.right - scrollLeft - scrollRight) / width,
+    (scrollLeft - border.left) / width,
+  );
 });

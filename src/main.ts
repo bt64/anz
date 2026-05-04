@@ -5,17 +5,67 @@ import { Data } from "./data";
 import { draw } from "./draw";
 import "./scroll";
 
-const fileInput = document.querySelector(
-  "input[type=file]",
+const container = document.querySelector("div.container") as HTMLDivElement;
+const controls = document.querySelector("div.controls") as HTMLDivElement;
+
+const fileInput = document.querySelector("input#file") as HTMLInputElement;
+const frameInput = document.querySelector("input#frame") as HTMLInputElement;
+const channelInput = document.querySelector(
+  "input#channel",
 ) as HTMLInputElement;
 
-const container = document.querySelector("div.container") as HTMLDivElement;
+const infoP = document.querySelector("p.info") as HTMLParagraphElement;
+
+let file: File | undefined;
+let data = new Data();
+
+const load = async (channel?: number, frame?: number) => {
+  if (!file) {
+    controls.classList.add("hide");
+    container.hidden = true;
+    return;
+  }
+
+  await data.loadFromFile(file, channel, frame);
+  draw(data);
+  container.hidden = false;
+  controls.classList.remove("hide");
+
+  if (channel === undefined) {
+    channelInput.value = data.channel.toString();
+  }
+
+  if (frame === undefined) {
+    frameInput.value = data.frame.toString();
+  }
+
+  if (data.isEvoked) {
+    frameInput.max = (data.frameCount - 1).toString();
+    frameInput.labels![0].hidden = false;
+    frameInput.hidden = false;
+  } else {
+    frameInput.labels![0].hidden = true;
+    frameInput.hidden = true;
+  }
+
+  const duration =
+    data.duration > 1000
+      ? `${(data.duration / 1000).toFixed(1)}s`
+      : `${data.duration.toFixed(1)}ms`;
+
+  infoP.innerHTML = `<span>${file.name}</span> : ${data.samplingRate}Hz, ${duration}, [${data.min.toFixed(3)}V, ${data.max.toFixed(3)}V]`;
+};
 
 fileInput.addEventListener("change", async (event) => {
-  const file = (event.target as HTMLInputElement).files?.[0];
-  if (!file) return;
+  file = (event.target as HTMLInputElement).files?.[0];
+  frameInput.value = "0";
+  await load();
+});
 
-  draw(await Data.fromFile(file));
+frameInput.addEventListener("input", async () => {
+  await load(channelInput.valueAsNumber, frameInput.valueAsNumber);
+});
 
-  container.classList.remove("hide");
+channelInput.addEventListener("input", async () => {
+  await load(channelInput.valueAsNumber, frameInput.valueAsNumber);
 });

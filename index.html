@@ -8,22 +8,25 @@
 </head>
 
 <body>
-  <div class="container hide">
-    <!-- <canvas></canvas> -->
-    <svg preserveAspectRatio="none">
+  <div class="container" hidden>
+    <svg preserveAspectRatio="none"></svg>
 
-    </svg>
-    <div class="axis x">TIME <span>s</span></div>
-    <div class="axis y">VOLTAGE <span>V</span></div>
+    <div class="axis x"></div>
+    <div class="axis y"></div>
+
     <div class="scroll h"></div>
     <div class="scroll v"></div>
   </div>
-  <div class="controls">
+
+  <div class="controls hide">
     <label for="file">LOAD FILE</label>
     <input type="file" id="file" accept=".anz">
+    <label for="frame">Frame:</label>
+    <input type="number" id="frame" min="0" value="0">
+    <label for="channel">Channel:</label>
+    <input type="number" id="channel" min="0" max="2" value="0">
     <p class="info"></p>
   </div>
-
 
   <script type="module" src="/src/main.ts"></script>
 </body>
